@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chat</title>
+    <link rel="stylesheet" href="static/styles.css">
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+</head>
+<body>
+    <div id="login" class="login-form">
+        <h2>Введіть своє ім'я:</h2>
+        <input id="username" type="text" placeholder="Ім'я">
+        <button onclick="joinChat()">Приєднатися</button>
+    </div>
+
+    <div id="chat" class="chat-container" style="display: none;">
+        <h1>Чат</h1>
+        <ul id="messages"></ul>
+        <div class="message-input">
+            <input id="message" autocomplete="off" placeholder="Введіть повідомлення">
+            <button onclick="sendMessage()">Відправити</button>
+        </div>
+    </div>
+
+<script type="text/javascript">
+    const socket = io();
+    let username = '';
+
+    function joinChat() {
+        username = document.getElementById('username').value;
+        if (username) {
+            socket.emit('username', username);
+            document.getElementById('login').style.display = 'none';
+            document.getElementById('chat').style.display = 'block';
+        }
+    }
+
+    socket.on('message', function(data) {
+        const item = document.createElement('li');
+        item.textContent = data.msg;
+        item.style.color = data.color;
+        document.getElementById('messages').appendChild(item);
+    });
+
+    socket.on('message_history', function(messages) {
+        const messageList = document.getElementById('messages');
+        messageList.innerHTML = '';
+        messages.forEach(function(data) {
+            const item = document.createElement('li');
+            item.textContent = data.msg;
+            item.style.color = data.color;
+            messageList.appendChild(item);
+        });
+    });
+
+    function sendMessage() {
+        const msg = document.getElementById('message').value;
+        if (msg) {
+            socket.send(msg);
+            document.getElementById('message').value = '';
+        }
+    }
+</script>
+
+
+</body>
+</html>
